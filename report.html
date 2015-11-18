@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="1404.13">
+  <style type="text/css">
+    p.p4 {margin: 0.0px 0.0px 10.0px 0.0px; line-height: 20.0px; font: 14.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333}
+    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; line-height: 20.0px; font: 12.0px Courier; color: #333333; -webkit-text-stroke: #333333; background-color: #f5f5f5}
+    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; line-height: 20.0px; font: 12.0px Courier; color: #333333; -webkit-text-stroke: #333333; background-color: #ffffff}
+    li.li8 {margin: 0.0px 0.0px 0.0px 0.0px; line-height: 20.0px; font: 14.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333}
+    span.s1 {font-kerning: none}
+    span.s2 {font: 12.0px Courier; font-kerning: none; color: #dd1144; background-color: #f7f7f9; -webkit-text-stroke: 0px #dd1144}
+    span.s3 {-webkit-text-stroke: 0px #000000}
+    ol.ol1 {list-style-type: decimal}
+  </style>
+</head>
+<body>
+<h1 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 39.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Practical Machine Learning Project - Quantified Self Movement Data Analysis Report</b></span></h1>
+<h4 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 20.0px; font: 18.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b><i>by BHARGAV MAKADIA</i></b></span></h4>
+<h2 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 32.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Introduction</b></span></h2>
+<p class="p4"><span class="s1">Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.</span></p>
+<p class="p4"><span class="s1">In this project, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.</span></p>
+<h2 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 32.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Data Preprocessing</b></span></h2>
+<p class="p5"><span class="s1">library(caret)</span></p>
+<p class="p6"><span class="s1">## Warning: package 'caret' was built under R version 3.1.2</span></p>
+<p class="p6"><span class="s1">## Loading required package: lattice</span></p>
+<p class="p6"><span class="s1">## Loading required package: ggplot2</span></p>
+<p class="p5"><span class="s1">library(rpart)</span></p>
+<p class="p5"><span class="s1">library(rpart.plot)</span></p>
+<p class="p6"><span class="s1">## Warning: package 'rpart.plot' was built under R version 3.1.2</span></p>
+<p class="p5"><span class="s1">library(randomForest)</span></p>
+<p class="p6"><span class="s1">## Warning: package 'randomForest' was built under R version 3.1.2</span></p>
+<p class="p6"><span class="s1">## randomForest 4.6-10</span></p>
+<p class="p6"><span class="s1">## Type rfNews() to see new features/changes/bug fixes.</span></p>
+<p class="p5"><span class="s1">library(corrplot)</span></p>
+<p class="p6"><span class="s1">## Warning: package 'corrplot' was built under R version 3.1.2</span></p>
+<h3 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 25.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Download the Data</b></span></h3>
+<p class="p5"><span class="s1">trainUrl &lt;-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"</span></p>
+<p class="p5"><span class="s1">testUrl &lt;- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"</span></p>
+<p class="p5"><span class="s1">trainFile &lt;- "./data/pml-training.csv"</span></p>
+<p class="p5"><span class="s1">testFile<span class="Apple-converted-space">  </span>&lt;- "./data/pml-testing.csv"</span></p>
+<p class="p5"><span class="s1">if (!file.exists("./data")) {</span></p>
+<p class="p5"><span class="s1"><span class="Apple-converted-space">  </span>dir.create("./data")</span></p>
+<p class="p5"><span class="s1">}</span></p>
+<p class="p5"><span class="s1">if (!file.exists(trainFile)) {</span></p>
+<p class="p5"><span class="s1"><span class="Apple-converted-space">  </span>download.file(trainUrl, destfile=trainFile, method="curl")</span></p>
+<p class="p5"><span class="s1">}</span></p>
+<p class="p5"><span class="s1">if (!file.exists(testFile)) {</span></p>
+<p class="p5"><span class="s1"><span class="Apple-converted-space">  </span>download.file(testUrl, destfile=testFile, method="curl")</span></p>
+<p class="p5"><span class="s1">}</span></p>
+<h3 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 25.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Read the Data</b></span></h3>
+<p class="p4"><span class="s1">After downloading the data from the data source, we can read the two csv files into two data frames.</span></p>
+<p class="p5"><span class="s1">trainRaw &lt;- read.csv("./data/pml-training.csv")</span></p>
+<p class="p5"><span class="s1">testRaw &lt;- read.csv("./data/pml-testing.csv")</span></p>
+<p class="p5"><span class="s1">dim(trainRaw)</span></p>
+<p class="p6"><span class="s1">## [1] 19622 <span class="Apple-converted-space">  </span>160</span></p>
+<p class="p5"><span class="s1">dim(testRaw)</span></p>
+<p class="p6"><span class="s1">## [1]<span class="Apple-converted-space">  </span>20 160</span></p>
+<p class="p4"><span class="s1">The training data set contains 19622 observations and 160 variables, while the testing data set contains 20 observations and 160 variables. The “classe” variable in the training set is the outcome to predict.</span></p>
+<h3 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 25.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Clean the data</b></span></h3>
+<p class="p4"><span class="s1">In this step, we will clean the data and get rid of observations with missing values as well as some meaningless variables.</span></p>
+<p class="p5"><span class="s1">sum(complete.cases(trainRaw))</span></p>
+<p class="p6"><span class="s1">## [1] 406</span></p>
+<p class="p4"><span class="s1">First, we remove columns that contain NA missing values.</span></p>
+<p class="p5"><span class="s1">trainRaw &lt;- trainRaw[, colSums(is.na(trainRaw)) == 0]<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s1">testRaw &lt;- testRaw[, colSums(is.na(testRaw)) == 0]<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s1">Next, we get rid of some columns that do not contribute much to the accelerometer measurements.</span></p>
+<p class="p5"><span class="s1">classe &lt;- trainRaw$classe</span></p>
+<p class="p5"><span class="s1">trainRemove &lt;- grepl("^X|timestamp|window", names(trainRaw))</span></p>
+<p class="p5"><span class="s1">trainRaw &lt;- trainRaw[, !trainRemove]</span></p>
+<p class="p5"><span class="s1">trainCleaned &lt;- trainRaw[, sapply(trainRaw, is.numeric)]</span></p>
+<p class="p5"><span class="s1">trainCleaned$classe &lt;- classe</span></p>
+<p class="p5"><span class="s1">testRemove &lt;- grepl("^X|timestamp|window", names(testRaw))</span></p>
+<p class="p5"><span class="s1">testRaw &lt;- testRaw[, !testRemove]</span></p>
+<p class="p5"><span class="s1">testCleaned &lt;- testRaw[, sapply(testRaw, is.numeric)]</span></p>
+<p class="p4"><span class="s1">Now, the cleaned training data set contains 19622 observations and 53 variables, while the testing data set contains 20 observations and 53 variables. The “classe” variable is still in the cleaned training set.</span></p>
+<h3 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 25.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Slice the data</b></span></h3>
+<p class="p4"><span class="s1">Then, we can split the cleaned training set into a pure training data set (70%) and a validation data set (30%). We will use the validation data set to conduct cross validation in future steps.</span></p>
+<p class="p5"><span class="s1">set.seed(22519) # For reproducibile purpose</span></p>
+<p class="p5"><span class="s1">inTrain &lt;- createDataPartition(trainCleaned$classe, p=0.70, list=F)</span></p>
+<p class="p5"><span class="s1">trainData &lt;- trainCleaned[inTrain, ]</span></p>
+<p class="p5"><span class="s1">testData &lt;- trainCleaned[-inTrain, ]</span></p>
+<h2 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 32.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Data Modeling</b></span></h2>
+<p class="p4"><span class="s1">We fit a predictive model for activity recognition using <b>Random Forest</b> algorithm because it automatically selects important variables and is robust to correlated covariates &amp; outliers in general. We will use <b>5-fold cross validation</b> when applying the algorithm.</span></p>
+<p class="p5"><span class="s1">controlRf &lt;- trainControl(method="cv", 5)</span></p>
+<p class="p5"><span class="s1">modelRf &lt;- train(classe ~ ., data=trainData, method="rf", trControl=controlRf, ntree=250)</span></p>
+<p class="p5"><span class="s1">modelRf</span></p>
+<p class="p6"><span class="s1">## Random Forest<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## 13737 samples</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">    </span>52 predictor</span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">    </span>5 classes: 'A', 'B', 'C', 'D', 'E'<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## No pre-processing</span></p>
+<p class="p6"><span class="s1">## Resampling: Cross-Validated (5 fold)<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## Summary of sample sizes: 10990, 10989, 10991, 10990, 10988<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## Resampling results across tuning parameters:</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">  </span>mtry<span class="Apple-converted-space">  </span>Accuracy <span class="Apple-converted-space">  </span>Kappa<span class="Apple-converted-space">      </span>Accuracy SD<span class="Apple-converted-space">  </span>Kappa SD<span class="Apple-converted-space">   </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">    </span>2<span class="Apple-converted-space">    </span>0.9912642<span class="Apple-converted-space">  </span>0.9889483<span class="Apple-converted-space">  </span>0.001124489<span class="Apple-converted-space">  </span>0.001422736</span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">  </span>27<span class="Apple-converted-space">    </span>0.9908999<span class="Apple-converted-space">  </span>0.9884874<span class="Apple-converted-space">  </span>0.002430602<span class="Apple-converted-space">  </span>0.003076372</span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">  </span>52<span class="Apple-converted-space">    </span>0.9838389<span class="Apple-converted-space">  </span>0.9795534<span class="Apple-converted-space">  </span>0.001201645<span class="Apple-converted-space">  </span>0.001519375</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## Accuracy was used to select the optimal model using<span class="Apple-converted-space">  </span>the largest value.</span></p>
+<p class="p6"><span class="s1">## The final value used for the model was mtry = 2.</span></p>
+<p class="p4"><span class="s1">Then, we estimate the performance of the model on the validation data set.</span></p>
+<p class="p5"><span class="s1">predictRf &lt;- predict(modelRf, testData)</span></p>
+<p class="p5"><span class="s1">confusionMatrix(testData$classe, predictRf)</span></p>
+<p class="p6"><span class="s1">## Confusion Matrix and Statistics</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">          </span>Reference</span></p>
+<p class="p6"><span class="s1">## Prediction<span class="Apple-converted-space">    </span>A<span class="Apple-converted-space">    </span>B<span class="Apple-converted-space">    </span>C<span class="Apple-converted-space">    </span>D<span class="Apple-converted-space">    </span>E</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">          </span>A 1672<span class="Apple-converted-space">    </span>2<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>0</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">          </span>B<span class="Apple-converted-space">    </span>3 1131<span class="Apple-converted-space">    </span>5<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>0</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">          </span>C<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>5 1017<span class="Apple-converted-space">    </span>4<span class="Apple-converted-space">    </span>0</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">          </span>D<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>0 <span class="Apple-converted-space">  </span>12<span class="Apple-converted-space">  </span>951<span class="Apple-converted-space">    </span>1</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">          </span>E<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>0<span class="Apple-converted-space">    </span>2 1080</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## Overall Statistics</span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">                                         </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">                </span>Accuracy : 0.9942<span class="Apple-converted-space">         </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">                  </span>95% CI : (0.9919, 0.996)</span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">    </span>No Information Rate : 0.2846<span class="Apple-converted-space">         </span></span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">    </span>P-Value [Acc &gt; NIR] : &lt; 2.2e-16 <span class="Apple-converted-space">     </span></span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">                                         </span></span></p>
+<p class="p6"><span class="s1">## <span class="Apple-converted-space">                  </span>Kappa : 0.9927<span class="Apple-converted-space">         </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">  </span>Mcnemar's Test P-Value : NA<span class="Apple-converted-space">             </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## Statistics by Class:</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">                      </span>Class: A Class: B Class: C Class: D Class: E</span></p>
+<p class="p6"><span class="s1">## Sensitivity<span class="Apple-converted-space">            </span>0.9982 <span class="Apple-converted-space">  </span>0.9938 <span class="Apple-converted-space">  </span>0.9836 <span class="Apple-converted-space">  </span>0.9937 <span class="Apple-converted-space">  </span>0.9991</span></p>
+<p class="p6"><span class="s1">## Specificity<span class="Apple-converted-space">            </span>0.9995 <span class="Apple-converted-space">  </span>0.9983 <span class="Apple-converted-space">  </span>0.9981 <span class="Apple-converted-space">  </span>0.9974 <span class="Apple-converted-space">  </span>0.9996</span></p>
+<p class="p6"><span class="s1">## Pos Pred Value <span class="Apple-converted-space">        </span>0.9988 <span class="Apple-converted-space">  </span>0.9930 <span class="Apple-converted-space">  </span>0.9912 <span class="Apple-converted-space">  </span>0.9865 <span class="Apple-converted-space">  </span>0.9982</span></p>
+<p class="p6"><span class="s1">## Neg Pred Value <span class="Apple-converted-space">        </span>0.9993 <span class="Apple-converted-space">  </span>0.9985 <span class="Apple-converted-space">  </span>0.9965 <span class="Apple-converted-space">  </span>0.9988 <span class="Apple-converted-space">  </span>0.9998</span></p>
+<p class="p6"><span class="s1">## Prevalence <span class="Apple-converted-space">            </span>0.2846 <span class="Apple-converted-space">  </span>0.1934 <span class="Apple-converted-space">  </span>0.1757 <span class="Apple-converted-space">  </span>0.1626 <span class="Apple-converted-space">  </span>0.1837</span></p>
+<p class="p6"><span class="s1">## Detection Rate <span class="Apple-converted-space">        </span>0.2841 <span class="Apple-converted-space">  </span>0.1922 <span class="Apple-converted-space">  </span>0.1728 <span class="Apple-converted-space">  </span>0.1616 <span class="Apple-converted-space">  </span>0.1835</span></p>
+<p class="p6"><span class="s1">## Detection Prevalence <span class="Apple-converted-space">  </span>0.2845 <span class="Apple-converted-space">  </span>0.1935 <span class="Apple-converted-space">  </span>0.1743 <span class="Apple-converted-space">  </span>0.1638 <span class="Apple-converted-space">  </span>0.1839</span></p>
+<p class="p6"><span class="s1">## Balanced Accuracy<span class="Apple-converted-space">      </span>0.9989 <span class="Apple-converted-space">  </span>0.9961 <span class="Apple-converted-space">  </span>0.9909 <span class="Apple-converted-space">  </span>0.9955 <span class="Apple-converted-space">  </span>0.9993</span></p>
+<p class="p5"><span class="s1">accuracy &lt;- postResample(predictRf, testData$classe)</span></p>
+<p class="p5"><span class="s1">accuracy</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">  </span>Accuracy <span class="Apple-converted-space">    </span>Kappa<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s1">## 0.9942226 0.9926921</span></p>
+<p class="p5"><span class="s1">oose &lt;- 1 - as.numeric(confusionMatrix(testData$classe, predictRf)$overall[1])</span></p>
+<p class="p5"><span class="s1">oose</span></p>
+<p class="p6"><span class="s1">## [1] 0.0057774</span></p>
+<p class="p4"><span class="s1">So, the estimated accuracy of the model is 99.42% and the estimated out-of-sample error is 0.58%.</span></p>
+<h2 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 32.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Predicting for Test Data Set</b></span></h2>
+<p class="p4"><span class="s1">Now, we apply the model to the original testing data set downloaded from the data source. We remove the </span><span class="s2">problem_id</span><span class="s1"> column first.</span></p>
+<p class="p5"><span class="s1">result &lt;- predict(modelRf, testCleaned[, -length(names(testCleaned))])</span></p>
+<p class="p5"><span class="s1">result</span></p>
+<p class="p6"><span class="s1">##<span class="Apple-converted-space">  </span>[1] B A B A A E D B A A B C B A E E A B B B</span></p>
+<p class="p6"><span class="s1">## Levels: A B C D E</span></p>
+<h2 style="margin: 0.0px 0.0px 10.0px 0.0px; line-height: 40.0px; font: 32.0px 'Helvetica Neue'; color: #333333; -webkit-text-stroke: #333333"><span class="s1"><b>Appendix: Figures</b></span></h2>
+<ol class="ol1">
+  <li class="li8"><span class="s3"></span><span class="s1">Correlation Matrix Visualization</span></li>
+</ol>
+<p class="p5"><span class="s1">corrPlot &lt;- cor(trainData[, -length(names(trainData))])</span></p>
+<p class="p5"><span class="s1">corrplot(corrPlot, method="color")</span></p>
+<p class="p4"><span class="s1"><img src="file:///unknown.png" alt="unknown.png"> 2. Decision Tree Visualization</span></p>
+<p class="p5"><span class="s1">treeModel &lt;- rpart(classe ~ ., data=trainData, method="class")</span></p>
+<p class="p5"><span class="s1">prp(treeModel) # fast plot</span></p>
+<p class="p4"><span class="s1"><img src="file:///unknown_1.png" alt="unknown_1.png"></span></p>
+</body>
+</html>
